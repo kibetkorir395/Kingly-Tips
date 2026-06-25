@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { CURRENCIES, type CurrencyCode, detectCountry, detectCountryCode, getFlagEmoji, formatPrice } from "@/lib/currency";
-import { createRisePayment } from "@/lib/payments.functions";
+import { createFlutterwavePayment, checkFlutterwavePaymentStatus } from "@/lib/payments.functions";
 import { toast } from "sonner";
 import { Crown, Lock, ShieldCheck, TrendingUp, Zap, Star, LogOut, Settings2 } from "lucide-react";
 
@@ -376,7 +376,7 @@ function PricingTab({ currency }: { currency: CurrencyCode }) {
     try {
       const { convertFromKES } = await import("@/lib/currency");
       const amt = convertFromKES(Number(plan.price_kes), currency);
-      const result = await createRisePayment({
+      const result = await createFlutterwavePayment({
         data: {
           planId: plan.id,
           currency,
@@ -390,7 +390,28 @@ function PricingTab({ currency }: { currency: CurrencyCode }) {
         window.location.href = result.paymentLink;
       } else {
         toast.success("Payment initiated. Check your phone to complete the M-Pesa prompt.");
-        setPaying(null);
+        const txRef = result.txRef;
+        const pollInterval = setInterval(async () => {
+          try {
+            const status = await checkFlutterwavePaymentStatus({ data: { txRef } });
+            if (status.ok) {
+              clearInterval(pollInterval);
+              toast.success("Payment successful! Your VIP access is now active.");
+              setPaying(null);
+              window.location.reload();
+            } else if (status.status === "failed") {
+              clearInterval(pollInterval);
+              toast.error("Payment failed. No charge was made.");
+              setPaying(null);
+            }
+          } catch {
+            // ignore polling errors
+          }
+        }, 5000);
+        setTimeout(() => {
+          clearInterval(pollInterval);
+          if (paying === plan.id) setPaying(null);
+        }, 120000);
       }
     } catch (e: any) {
       toast.error(e?.message ?? "Could not start payment");
