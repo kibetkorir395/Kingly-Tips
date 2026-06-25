@@ -1,9 +1,8 @@
-// vite.config.ts
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+// app.config.ts
+import { defineConfig } from '@tanstack/start/config'
 
 export default defineConfig({
-  tanstackStart: {
-    server: { entry: "server" },
+  server: {
+    preset: 'node-server', // ← change this from 'cloudflare-pages' or auto-detected
   },
-  // Lovable's config handles everything else automatically
-});
+})
