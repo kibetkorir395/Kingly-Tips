@@ -4,8 +4,6 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: bun install && bun run build
-    startCommand: node .output/server/index.mjs
     envVars:
       - key: NODE_VERSION
         value: 20
