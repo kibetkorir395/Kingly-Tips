@@ -18,21 +18,6 @@ export default defineConfig({
       rollupOptions: {
         // Keep any existing config here
       }
-    },
-    // ✅ Add redirects as a custom plugin in the correct format
-    plugins: [
-      {
-        name: 'redirects',
-        apply: 'build',
-        // @ts-ignore - This is a valid Vite/Rollup hook
-        generateBundle() {
-          this.emitFile({
-            type: 'asset',
-            fileName: '_redirects',
-            source: '/* /index.html 200\n',
-          });
-        },
-      },
-    ],
+    }
   },
 });
