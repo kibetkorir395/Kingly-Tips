@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { verifyFlutterwavePayment } from "@/lib/payments.functions";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/payment/callback")({
-  head=> ({ meta: [{ title: "Payment — KingpinTips" }] }),
+  head: ({ meta: [{ title: "Payment — KingpinTips" }] }),
   component,
 });
 
@@ -18,7 +18,7 @@ function CallbackPage() {
     const status = params.get("status");
     if (!txRef || status === "cancelled") { setState("failed"); return; }
     verifyFlutterwavePayment({ data: { txRef } })
-      .then((r) => setState(r.ok ? "success" )
+      .then((r) => setState(r.ok ? "success" : "failed"))
       .catch(() => setState("failed"));
   }, []);
 
