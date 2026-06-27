@@ -9,20 +9,20 @@ import { toast } from "sonner";
 import { Crown, Lock, ShieldCheck, TrendingUp, Zap, Star, LogOut, Settings2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head=> ({
+  head: () => ({
     meta: [
       { title: "KingpinTips – Today's Winning Football Predictions" },
-      { name, content: "Daily free football tips and premium VIP predictions. 95% success rate, trusted by 10,000+ punters." },
+      { name: "description", content: "Daily free football tips and premium VIP predictions. 95% success rate, trusted by 10,000+ punters." },
     ],
   }),
-  component,
+  component: HomePage,
 });
 
- match_date; kickoff_time: string | null; league: string | null;
-  home_team; away_team; tip; odds: number | null;
+type Tip = { id: string; match_date: string; kickoff_time: string | null; league: string | null;
+  home_team: string; away_team: string; tip: string; odds: number | null;
   result: "pending" | "won" | "lost" | "void";
 };
- code; name; duration_days; price_kes; sort_order: number };
+type Plan = { id: string; code: string; name: string; duration_days: number; price_kes: number; sort_order: number };
 
 function HomePage() {
   const [tab, setTab] = useState("predictions");
@@ -52,7 +52,7 @@ function HomePage() {
 
 function Header({ user, isAdmin, currency, setCurrency, countryCode }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-[color)]/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-[color:var(--background)]/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
@@ -66,7 +66,7 @@ function Header({ user, isAdmin, currency, setCurrency, countryCode }) {
           <span className="text-lg leading-none" title={countryCode}>{getFlagEmoji(countryCode)}</span>
           <select
             value={currency}
-            onChange={(e) => setCurrency(e.target.value
+            onChange={(e) => setCurrency(e.target.value)}
             className="rounded-md border border-border bg-card px-2 py-1.5 text-xs font-semibold"
             aria-label="Currency"
           >
@@ -106,7 +106,7 @@ function Header({ user, isAdmin, currency, setCurrency, countryCode }) {
 function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-border">
-      <div className="absolute inset-0 bg-gradient-to-br from-[color)] via-[color)] to-[color)]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[color:var(--background)] via-[color:var(--background)] to-[color:var(--background)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(234,184,75,0.18),transparent_60%)]" />
       <div className="relative mx-auto max-w-6xl px-4 py-14 text-center">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -141,9 +141,9 @@ function Stat({ n, l, icon }) {
 
 function Tabs({ tab, setTab }) {
   const tabs = [
-    { id, label: "Predictions" },
-    { id, label: "Winning History" },
-    { id, label: "VIP Pricing" },
+    { id: "predictions", label: "Predictions" },
+    { id: "history", label: "Winning History" },
+    { id: "pricing", label: "VIP Pricing" },
   ];
   return (
     <div className="mb-6 flex gap-2 overflow-x-auto">
@@ -171,8 +171,8 @@ function localTodayISO() {
 
 function PredictionsTab({ currency, onViewPlans }) {
   const today = localTodayISO();
-  const { data, isLoading: l1 } = useQuery({
-    queryKey, today],
+  const { data: freeTips, isLoading: l1 } = useQuery({
+    queryKey: ["free_tips", today],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("free_tips").select("*")
@@ -182,8 +182,8 @@ function PredictionsTab({ currency, onViewPlans }) {
       return (data ?? []);
     },
   });
-  const { data, isLoading: l2 } = useQuery({
-    queryKey, today],
+  const { data: vipTips, isLoading: l2 } = useQuery({
+    queryKey: ["vip_tips", today],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vip_tips").select("*")
@@ -253,7 +253,7 @@ function TipsTable({ tips, empty }) {
             {tips.map((t) => (
               <tr key={t.id} className="border-t border-border hover:bg-secondary/40">
                 <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(t.match_date).toLocaleDateString(undefined, { weekday, day, month: "short" })}
+                  {new Date(t.match_date).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}
                   {t.kickoff_time && <div className="opacity-70">{t.kickoff_time}</div>}
                 </td>
                 <td className="px-4 py-3">
@@ -300,7 +300,7 @@ function LockedVipPreview({ onViewPlans }) {
 
 function VipBanner({ currency }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-[color)] to-[color)] p-8 text-center">
+    <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-[color:var(--background)] to-[color:var(--background)] p-8 text-center">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(234,184,75,0.12),transparent_60%)]" />
       <div className="relative">
         <Crown className="mx-auto h-10 w-10 text-primary" />
@@ -327,7 +327,7 @@ function HistoryTab() {
   const monday = getMondayISO();
   const today = localTodayISO();
   const { data, isLoading } = useQuery({
-    queryKey, monday, today],
+    queryKey: ["history", monday, today],
     queryFn: async () => {
       const [free, vip] = await Promise.all([
         supabase.from("free_tips").select("*").neq("result", "pending").gte("match_date", monday).lte("match_date", today).order("match_date", { ascending: false }).limit(100),
@@ -353,7 +353,7 @@ function PricingTab({ currency }) {
   const { user } = useAuth();
   const [paying, setPaying] = useState(null);
   const { data: plans } = useQuery({
-    queryKey,
+    queryKey: ["plans"],
     queryFn: async () => {
       const { data, error } = await supabase.from("plans").select("*").eq("is_active", true).order("sort_order");
       if (error) throw error;
@@ -363,10 +363,10 @@ function PricingTab({ currency }) {
 
   async function subscribe(plan) {
     if (!user) { window.location.href = "/auth?next=/"; return; }
-    const method = currency === "KES" ? "mpesa" ;
+    const method = currency === "KES" ? "mpesa" : "card";
     const promptMsg = method === "mpesa"
       ? "Enter your M-Pesa phone number (e.g. 2547XXXXXXXX):"
-      : "Enter your phone number;
+      : "Enter your phone number:";
     const phone = window.prompt(promptMsg, "254")?.trim();
     if (!phone) { toast.error("Phone number is required"); return; }
     setPaying(plan.id);
@@ -429,7 +429,7 @@ function PricingTab({ currency }) {
             <div className="mt-3 font-display text-4xl font-extrabold text-primary">
               {formatPrice(Number(p.price_kes), currency)}
             </div>
-            <div className="text-xs text-muted-foreground">/ {p.duration_days === 1 ? "day" === 7 ? "week" : "month"}</div>
+            <div className="text-xs text-muted-foreground">/ {p.duration_days === 1 ? "day" : p.duration_days === 7 ? "week" : "month"}</div>
             <ul className="mt-5 space-y-2 text-sm">
               <li className="flex gap-2"><Check /> All VIP daily tips</li>
               <li className="flex gap-2"><Check /> Sure odds & analysis</li>
@@ -458,7 +458,7 @@ function Check() {
 
 function Footer() {
   return (
-    <footer className="mt-16 border-t border-border bg-[color)] py-8 text-center text-xs text-muted-foreground">
+    <footer className="mt-16 border-t border-border bg-[color:var(--background)] py-8 text-center text-xs text-muted-foreground">
       <p className="mb-2 font-display text-base font-bold text-foreground">Kingpin<span className="text-primary">Tips</span></p>
       <p>© {new Date().getFullYear()} KingpinTips. All rights reserved.</p>
       <p className="mt-2 opacity-70">18+ | Bet responsibly. Predictions are opinions — no guarantees.</p>
