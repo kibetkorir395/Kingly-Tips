@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const labelVariants = cva(
   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled);
+)
 
 const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,

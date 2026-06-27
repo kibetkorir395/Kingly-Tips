@@ -34,6 +34,7 @@ const CommandDialog = ({ children, ...props }=> {
     </Dialog>
   );
 };
+)
 
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
