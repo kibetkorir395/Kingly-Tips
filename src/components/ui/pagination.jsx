@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoveHorizontal as MoreHorizontal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { ButtonProps, buttonVariants } from "@/components/ui/button";
@@ -26,15 +26,17 @@ const PaginationItem = React.forwardRef<HTMLLIElement, React.ComponentProps<"li"
 );
 PaginationItem.displayName = "PaginationItem";
 
+type PaginationLinkProps = {
+  isActive?: boolean;
 } & Pick<ButtonProps, "size"> &
   React.ComponentProps<"a">;
 
-const PaginationLink = ({ className, isActive, size = "icon", ...props }=> (
+const PaginationLink = ({ className, isActive, size = "icon", ...props }: PaginationLinkProps) => (
   <a
     aria-current={isActive ? "page" : undefined}
     className={cn(
       buttonVariants({
-        variant: isActive ? "outline" ,
+        variant: isActive ? "outline" : "ghost",
         size,
       }),
       className,
