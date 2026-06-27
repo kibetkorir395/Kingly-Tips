@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowLeft, Crown, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, Crown, CircleCheck as CheckCircle2, Circle as XCircle, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/subscription")({
-  head=> ({ meta: [{ title: "My Subscription — KingpinTips" }] }),
+  head: ({ meta: [{ title: "My Subscription — KingpinTips" }] }),
   component,
 });
 
@@ -13,12 +13,12 @@ function SubscriptionPage() {
   const { user } = useAuth();
 
   const { data, isLoading } = useQuery({
-    queryKey, user?.id],
+    queryKey: ["subscriptions", user?.id],
     enabled,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("subscriptions")
-        .select("id,status,started_at,expires_at,plan)
+        .select("id,status,started_at,expires_at,plan")
         .eq("user_id", user!.id)
         .order("started_at", { ascending: false });
       if (error) throw error;
@@ -27,12 +27,12 @@ function SubscriptionPage() {
   });
 
   const { data: payments } = useQuery({
-    queryKey, user?.id],
+    queryKey: ["payments", user?.id],
     enabled,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("payments")
-        .select("id,amount,currency,status,tx_ref,created_at,plan)
+        .select("id,amount,currency,status,tx_ref,created_at,plan")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(20);
@@ -46,7 +46,7 @@ function SubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-[color)]">
+      <header className="border-b border-border bg-[color]">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Back to site
@@ -129,7 +129,7 @@ function SubscriptionPage() {
 }
 
 function StatusBadge({ status }) {
-  const map= {
+  const map = {
     active,
     success,
     completed,
