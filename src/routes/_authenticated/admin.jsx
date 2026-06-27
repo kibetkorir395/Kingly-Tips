@@ -7,16 +7,17 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  head=> ({ meta: [{ title: "Admin — KingpinTips" }] }),
+  head: ({ meta: [{ title: "Admin — KingpinTips" }] }),
   component,
 });
 
- kickoff_time; league;
-  home_team; away_team; tip; odds;
+type TipForm = {
+ kickoff_time: string; league: string;
+  home_team: string; away_team: string; tip: string; odds: string;
 };
-const emptyTip= {
+const emptyTip = {
   match_date: new Date().toISOString().slice(0, 10),
-  kickoff_time, league, home_team, away_team, tip, odds,
+  kickoff_time: "", league: "", home_team: "", away_team: "", tip: "", odds: "",
 };
 
 function AdminPage() {
@@ -37,7 +38,7 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-[color)]">
+      <header className="border-b border-border bg-[color:var(--card)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Back to site
@@ -51,7 +52,7 @@ function AdminPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-6 flex gap-2 border-b border-border">
-          {(["free", "vip", "plans"]) => (
+          {(["free", "vip", "plans"]).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className={`-mb-px border-b-2 px-4 py-3 text-sm font-semibold capitalize ${tab===t ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>
               {t === "plans" ? "Plans" : `${t} Tips`}
@@ -70,7 +71,7 @@ function TipsAdmin({ table, maxFree }) {
   const qc = useQueryClient();
   const [form, setForm] = useState(emptyTip);
   const { data: tips } = useQuery({
-    queryKey, "admin"],
+    queryKey: [table, "admin"],
     queryFn: async () => {
       const { data, error } = await supabase.from(table).select("*").order("match_date", { ascending: false }).limit(100);
       if (error) throw error;
@@ -88,29 +89,29 @@ function TipsAdmin({ table, maxFree }) {
         return;
       }
     }
-    const payload= {
-      match_date,
+    const payload = {
+      match_date: form.match_date,
       kickoff_time: form.kickoff_time || null,
       league: form.league || null,
-      home_team,
-      away_team,
-      tip,
-      odds: form.odds ? Number(form.odds) ,
+      home_team: form.home_team,
+      away_team: form.away_team,
+      tip: form.tip,
+      odds: form.odds ? Number(form.odds) : null,
     };
     const { error } = await supabase.from(table).insert(payload);
-    if (error) { toast.error(`Add failed; return; }
+    if (error) { toast.error(`Add failed: ${error.message}`); return; }
     toast.success("Tip added");
     setForm(emptyTip);
     qc.invalidateQueries({ queryKey: [table] });
   }
 
   async function saveRow(id, patch) {
-    const clean= { ...patch };
-    if ("odds" in clean) clean.odds = clean.odds === "" || clean.odds == null ? null ;
+    const clean = { ...patch };
+    if ("odds" in clean) clean.odds = clean.odds === "" || clean.odds == null ? null : Number(clean.odds);
     if ("kickoff_time" in clean) clean.kickoff_time = clean.kickoff_time || null;
     if ("league" in clean) clean.league = clean.league || null;
     const { error } = await supabase.from(table).update(clean).eq("id", id);
-    if (error) { toast.error(`Save failed; return false; }
+    if (error) { toast.error(\`Save failed: ${error.message}`); return false; }
     toast.success("Saved");
     qc.invalidateQueries({ queryKey: [table] });
     return true;
@@ -126,7 +127,7 @@ function TipsAdmin({ table, maxFree }) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="mb-3 font-display text-lg font-bold uppercase">Add {table === "free_tips" ? "Free" : "VIP"} Tip {maxFree && (max 4 upcoming)</span>}</h3>
+        <h3 className="mb-3 font-display text-lg font-bold uppercase">Add {table === "free_tips" ? "Free" : "VIP"} Tip {maxFree && <span>(max 4 upcoming)</span>}</h3>
         <form onSubmit={add} className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Input label="Date" type="date" value={form.match_date} onChange={(v) => setForm({ ...form, match_date: v })} required />
           <Input label="Kickoff" value={form.kickoff_time} onChange={(v) => setForm({ ...form, kickoff_time: v })} placeholder="20:00" />
@@ -204,8 +205,8 @@ function EditableRow({ tip, onSave, onDelete }) {
       </td>
       <td className="p-2 text-right whitespace-nowrap">
         <button onClick={async () => { const ok = await onSave(tip.id, {
-          match_date, kickoff_time, league,
-          home_team, away_team, tip, odds, result,
+          match_date: row.match_date, kickoff_time: row.kickoff_time, league: row.league,
+          home_team: row.home_team, away_team: row.away_team, tip: row.tip, odds: row.odds, result: row.result,
         }); if (ok) setEdit(false); }} className="mr-2 rounded bg-primary px-2 py-1 text-xs font-bold text-primary-foreground">Save</button>
         <button onClick={() => { setRow(tip); setEdit(false); }} className="text-xs text-muted-foreground">Cancel</button>
       </td>
@@ -216,7 +217,7 @@ function EditableRow({ tip, onSave, onDelete }) {
 function PlansAdmin() {
   const qc = useQueryClient();
   const { data: plans } = useQuery({
-    queryKey,
+    queryKey: ["plans-admin"],
     queryFn: async () => (await supabase.from("plans").select("*").order("sort_order")).data ?? [],
   });
   async function setPrice(id, price) {
