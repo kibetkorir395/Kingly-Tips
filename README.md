@@ -1,1 +1,1 @@
-﻿# Kingly-Tips
+# Kingly-Tips
